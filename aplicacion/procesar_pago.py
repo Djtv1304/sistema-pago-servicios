@@ -29,6 +29,7 @@ from dominio.pagos import calcular_detalle, construir_pago, describir_detalle
 from infraestructura.auditoria import auditar_pago_aprobado, auditar_pago_rechazado
 from infraestructura.repositorio_pagos import obtener_secuencial, registrar_pago
 from aplicacion.sesion import exigir_turno_activo
+from aplicacion.gestion_clientes import sincronizar_saldo
 
 CLIENTE_NO_IDENTIFICADO = "(cliente no identificado)"
 
@@ -148,6 +149,10 @@ def procesar_pago(nombre: str, estado: str, saldo, servicio: str, valor) -> dict
         cliente = _preparar_cliente(nombre, estado, saldo)
         detalle = calcular_detalle(servicio, valor)
         cliente_actualizado = _autorizar_debito(cliente, detalle)
+
+        # El saldo se persiste ANTES de asentar el pago: si el cliente no
+        # estuviera registrado, el fallo ocurre sin haber emitido comprobante.
+        sincronizar_saldo(cliente_actualizado)
 
         pago, comprobante = _asentar_transaccion(
             operador, cliente, cliente_actualizado, detalle

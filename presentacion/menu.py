@@ -4,6 +4,8 @@
 from config import constantes
 from config.constantes import ETIQUETAS_MENU
 from core.excepciones import ErrorSistemaPagos
+from aplicacion.consultas import consultar_clientes
+from presentacion.entrada import solicitar_alta_cliente
 from aplicacion.consultas import (
     consultar_bitacora,
     consultar_bitacora_del_turno,
@@ -79,6 +81,12 @@ def _atender_opcion(opcion: str) -> bool:
             case constantes.OPCION_CAMBIAR_TURNO:
                 _cambiar_turno()
 
+            case constantes.OPCION_REGISTRAR_CLIENTE:
+                _registrar_cliente()
+
+            case constantes.OPCION_VER_CLIENTES:
+                _consultar_clientes()
+
             case constantes.OPCION_SALIR:
                 return _finalizar_jornada()
 
@@ -152,6 +160,26 @@ def _cambiar_turno() -> None:
 
     saliente, entrante = cambiar_turno(solicitar_operador_entrante())
     mostrar_relevo(saliente, entrante)
+
+
+# --------------------------------------------------------------------------- #
+# Opción: registrar cliente
+# --------------------------------------------------------------------------- #
+def _registrar_cliente() -> None:
+    """Da de alta un cliente en la cartera.
+
+    El alta es independiente del pago: permite preparar la cartera al inicio
+    de la jornada sin tener que registrar un pago para hacerlo.
+    """
+    solicitar_alta_cliente()
+
+
+# --------------------------------------------------------------------------- #
+# Opción: ver clientes
+# --------------------------------------------------------------------------- #
+def _consultar_clientes() -> None:
+    """Muestra la cartera con el saldo vigente de cada cliente."""
+    mostrar_reporte(consultar_clientes())
 
 
 # --------------------------------------------------------------------------- #

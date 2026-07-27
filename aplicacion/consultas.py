@@ -13,6 +13,7 @@ from decimal import Decimal
 from config.constantes import RESULTADO_RECHAZADO
 from dominio.operadores import obtener_codigo, obtener_nombre
 from infraestructura import auditoria
+from infraestructura import repositorio_clientes as clientes
 from infraestructura import repositorio_pagos as repositorio
 from aplicacion.sesion import exigir_turno_activo
 
@@ -22,7 +23,9 @@ TITULO_BITACORA_GENERAL = "BITÁCORA DE AUDITORÍA"
 TITULO_BITACORA_TURNO = "BITÁCORA DE AUDITORÍA DEL TURNO"
 TITULO_RECHAZOS = "OPERACIONES RECHAZADAS"
 TITULO_CIERRE_CAJA = "CIERRE DE CAJA DEL TURNO"
+TITULO_CLIENTES = "CLIENTES REGISTRADOS"
 
+MENSAJE_SIN_CLIENTES = "No hay clientes registrados."
 MENSAJE_SIN_PAGOS = "No se han registrado pagos."
 MENSAJE_SIN_EVENTOS = "No hay eventos registrados."
 MENSAJE_SIN_RECHAZOS = "No se registraron operaciones rechazadas."
@@ -57,6 +60,31 @@ def _construir_reporte(
         "vacio": esta_vacio,
     }
 
+# --------------------------------------------------------------------------- #
+# Clientes
+# --------------------------------------------------------------------------- #
+
+def consultar_clientes() -> dict:
+    """Devuelve la cartera de clientes con su saldo vigente.
+
+    El acceso a saldos de clientes se audita, por la misma razón que el
+    historial de pagos: expone información financiera.
+
+    Raises:
+        TurnoNoIniciadoError: si no hay turno de caja abierto.
+    """
+    operador = exigir_turno_activo()
+    cartera = clientes.listar_clientes()
+
+    auditoria.auditar_consulta_clientes(operador, len(cartera))
+
+    return _construir_reporte(
+        titulo=TITULO_CLIENTES,
+        registros=cartera,
+        formateador=clientes.describir_cliente_registrado,
+        resumen=clientes.describir_resumen_clientes(),
+        mensaje_vacio=MENSAJE_SIN_CLIENTES,
+    )
 
 # --------------------------------------------------------------------------- #
 # Consultas de pagos

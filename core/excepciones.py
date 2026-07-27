@@ -103,3 +103,31 @@ class DatoInvalidoError(ErrorSistemaPagos):
         super().__init__(f"Campo '{campo}': {detalle}")
         self.campo = campo
         self.detalle = detalle
+
+# --------------------------------------------------------------------------- #
+# Errores de clientes
+# --------------------------------------------------------------------------- #
+class ClienteNoRegistradoError(ErrorSistemaPagos):
+    """Se intentó operar con un cliente que no existe en la cartera."""
+
+    codigo = "ERR_CLIENTE_NO_REGISTRADO"
+
+    def __init__(self, referencia: str) -> None:
+        super().__init__(
+            f"El cliente '{referencia}' no se encuentra registrado. "
+            f"Regístrelo antes de operar."
+        )
+        self.referencia = referencia
+
+
+class ClienteDuplicadoError(ErrorSistemaPagos):
+    """Se intentó registrar un cliente que ya existe."""
+
+    codigo = "ERR_CLIENTE_DUPLICADO"
+
+    def __init__(self, nombre: str) -> None:
+        super().__init__(
+            f"El cliente '{nombre}' ya está registrado. "
+            f"Selecciónelo del listado en lugar de crearlo nuevamente."
+        )
+        self.nombre = nombre

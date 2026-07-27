@@ -26,11 +26,14 @@ from config.constantes import (
     PREFIJO_AUDITORIA,
     RESULTADO_EXITOSO,
     RESULTADO_RECHAZADO,
+    EVENTO_CLIENTE_REGISTRADO,
+    EVENTO_CONSULTA_CLIENTES,
 )
 from core.dinero import formatear
 from core.excepciones import DatoInvalidoError, ErrorSistemaPagos
 from core.validaciones import validar_opcion, validar_texto_requerido
 from dominio.comprobantes import obtener_numero
+from dominio.clientes import describir_cliente
 from dominio.operadores import obtener_codigo, obtener_nombre
 from dominio.pagos import describir_pago
 from datetime import datetime
@@ -177,6 +180,30 @@ def auditar_consulta_historial(operador: dict, cantidad: int, total) -> dict:
         EVENTO_CONSULTA_HISTORIAL,
         operador,
         f"Historial consultado: {cantidad} pago(s), total {formatear(total)}.",
+    )
+
+# --------------------------------------------------------------------------- #
+# Clientes
+# --------------------------------------------------------------------------- #
+def auditar_cliente_registrado(operador: dict, cliente: dict) -> dict:
+    """Deja constancia del alta de un cliente en la cartera.
+
+    Se registra el saldo inicial declarado: es el punto de partida contra el
+    que se contrastan todos los débitos posteriores.
+    """
+    return registrar_auditoria(
+        EVENTO_CLIENTE_REGISTRADO,
+        operador,
+        f"Cliente registrado: {describir_cliente(cliente)}",
+    )
+
+
+def auditar_consulta_clientes(operador: dict, cantidad: int) -> dict:
+    """Deja constancia de una consulta a la cartera de clientes."""
+    return registrar_auditoria(
+        EVENTO_CONSULTA_CLIENTES,
+        operador,
+        f"Cartera consultada: {cantidad} cliente(s).",
     )
 
 

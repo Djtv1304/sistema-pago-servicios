@@ -34,6 +34,8 @@ TITULO_SERVICIOS = "SERVICIOS DISPONIBLES"
 TITULO_CONFIRMACION = "DETALLE DE LA TRANSACCIÓN"
 TITULO_CIERRE_TURNO = "TURNO CERRADO"
 TITULO_RELEVO = "CAMBIO DE TURNO"
+TITULO_SELECCION_CLIENTE = "SELECCIONE UN CLIENTE"
+TITULO_ALTA_CLIENTE = "REGISTRO DE NUEVO CLIENTE"
 
 
 # --------------------------------------------------------------------------- #
@@ -198,6 +200,32 @@ def mostrar_reporte(reporte: dict) -> None:
     mostrar_texto(f" {reporte['resumen']}")
     mostrar_borde()
 
+# --------------------------------------------------------------------------- #
+# Clientes
+# --------------------------------------------------------------------------- #
+def mostrar_clientes_para_seleccion(clientes: list) -> None:
+    """Dibuja el listado numerado de clientes disponibles para operar."""
+    from infraestructura.repositorio_clientes import describir_opcion_cliente
+
+    mostrar_titulo(TITULO_SELECCION_CLIENTE)
+    for indice, cliente in enumerate(clientes):
+        mostrar_texto(f"  {describir_opcion_cliente(indice, cliente)}")
+    mostrar_divisor()
+
+
+def mostrar_titulo_alta_cliente() -> None:
+    """Anuncia el inicio de la captura de un cliente nuevo."""
+    mostrar_titulo(TITULO_ALTA_CLIENTE)
+
+
+def mostrar_cliente_registrado(cliente: dict) -> None:
+    """Confirma el alta de un cliente en la cartera."""
+    mostrar_exito(f"Cliente registrado: {describir_cliente(cliente)}")
+
+
+def mostrar_cliente_seleccionado(cliente: dict) -> None:
+    """Confirma con qué cliente se va a operar."""
+    mostrar_texto(f" Cliente seleccionado: {describir_cliente(cliente)}")
 
 # --------------------------------------------------------------------------- #
 # Turnos

@@ -91,19 +91,25 @@ EVENTO_TURNO_CERRADO = "TURNO_CERRADO"
 EVENTO_PAGO_APROBADO = "PAGO_APROBADO"
 EVENTO_PAGO_RECHAZADO = "PAGO_RECHAZADO"
 EVENTO_CONSULTA_HISTORIAL = "CONSULTA_HISTORIAL"
+EVENTO_CLIENTE_REGISTRADO = "CLIENTE_REGISTRADO"
+EVENTO_CONSULTA_CLIENTES = "CONSULTA_CLIENTES"
 
 # --------------------------------------------------------------------------- #
 # Opciones del menú principal
 # --------------------------------------------------------------------------- #
 OPCION_REGISTRAR_PAGO = "1"
-OPCION_VER_HISTORIAL = "2"
-OPCION_VER_AUDITORIA = "3"
-OPCION_CAMBIAR_TURNO = "4"
+OPCION_REGISTRAR_CLIENTE = "2"
+OPCION_VER_CLIENTES = "3"
+OPCION_VER_HISTORIAL = "4"
+OPCION_VER_AUDITORIA = "5"
+OPCION_CAMBIAR_TURNO = "6"
 OPCION_SALIR = "0"
 
 ETIQUETAS_MENU = {
     OPCION_REGISTRAR_PAGO: "Registrar pago de servicio",
-    OPCION_VER_HISTORIAL: "Ver historial de pagos del día",
+    OPCION_REGISTRAR_CLIENTE: "Registrar nuevo cliente",
+    OPCION_VER_CLIENTES: "Ver clientes registrados",
+    OPCION_VER_HISTORIAL: "Ver historial de pagos",
     OPCION_VER_AUDITORIA: "Ver bitácora de auditoría",
     OPCION_CAMBIAR_TURNO: "Cambiar turno de operador",
     OPCION_SALIR: "Cerrar turno y salir",
@@ -127,9 +133,11 @@ LONGITUD_SECUENCIAL_AUDITORIA = 6
 EVENTOS_AUDITABLES = (
     EVENTO_TURNO_INICIADO,
     EVENTO_TURNO_CERRADO,
+    EVENTO_CLIENTE_REGISTRADO,
     EVENTO_PAGO_APROBADO,
     EVENTO_PAGO_RECHAZADO,
     EVENTO_CONSULTA_HISTORIAL,
+    EVENTO_CONSULTA_CLIENTES,
 )
 
 # --------------------------------------------------------------------------- #
