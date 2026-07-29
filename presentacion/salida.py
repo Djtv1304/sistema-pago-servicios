@@ -36,6 +36,10 @@ TITULO_CIERRE_TURNO = "TURNO CERRADO"
 TITULO_RELEVO = "CAMBIO DE TURNO"
 TITULO_SELECCION_CLIENTE = "SELECCIONE UN CLIENTE"
 TITULO_ALTA_CLIENTE = "REGISTRO DE NUEVO CLIENTE"
+TITULO_PENDIENTES = "SERVICIOS PENDIENTES DEL CLIENTE"
+TITULO_CAMBIO_ESTADO = "CAMBIO DE ESTADO DE CLIENTE"
+TITULO_CARGA_DEMO = "CARGA DE CLIENTES DE DEMOSTRACIÓN"
+ETIQUETA_SIN_VALOR = "(a digitar)"
 
 
 # --------------------------------------------------------------------------- #
@@ -73,6 +77,49 @@ def mostrar_titulo(titulo: str) -> None:
     mostrar_centrado(titulo)
     mostrar_borde()
 
+def mostrar_servicios_pendientes(cliente: dict) -> None:
+    """Lista los servicios impagos con su importe, cuando lo tienen asignado.
+    """
+    from dominio.clientes import obtener_pendientes, obtener_valor_servicio
+    from dominio.servicios import obtener_descripcion
+
+    mostrar_texto(f" {TITULO_PENDIENTES}:")
+    for servicio in obtener_pendientes(cliente):
+        valor = obtener_valor_servicio(cliente, servicio)
+        importe = formatear(valor) if valor is not None else ETIQUETA_SIN_VALOR
+        descripcion = obtener_descripcion(servicio)
+        mostrar_texto(f"   - {servicio:<10} {descripcion:<20} {importe:>14}")
+
+
+def mostrar_cuenta_al_dia(cliente: dict) -> None:
+    """Informa que el cliente no tiene nada por pagar."""
+    mostrar_aviso(f"{cliente['nombre']} no registra servicios pendientes.")
+
+def mostrar_cambio_estado(anterior: dict, actual: dict) -> None:
+    """Presenta la transición de estado de un cliente."""
+    mostrar_titulo(TITULO_CAMBIO_ESTADO)
+    mostrar_texto(f" Cliente : {actual['nombre']}")
+    mostrar_texto(f" Estado  : {anterior['estado']}  ->  {actual['estado']}")
+    mostrar_borde()
+
+def mostrar_valor_preasignado(servicio: str, valor) -> None:
+    """Informa el importe que se tomó de la planilla del cliente."""
+    mostrar_texto(f" Valor según planilla ({servicio}): {formatear(valor)}")
+
+def mostrar_carga_demo(resultado: dict) -> None:
+    """Presenta el resultado de sembrar la cartera de demostración."""
+    from dominio.clientes import describir_cliente
+
+    mostrar_titulo(TITULO_CARGA_DEMO)
+    for cliente in resultado["cargados"]:
+        mostrar_texto(f"   + {describir_cliente(cliente)}")
+
+    mostrar_divisor()
+    mostrar_texto(
+        f" Cargados: {len(resultado['cargados'])} | "
+        f"Total: {resultado['total']}"
+    )
+    mostrar_borde()
 
 # --------------------------------------------------------------------------- #
 # Mensajes con intención

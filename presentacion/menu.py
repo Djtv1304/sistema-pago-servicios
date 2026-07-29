@@ -4,8 +4,6 @@
 from config import constantes
 from config.constantes import ETIQUETAS_MENU
 from core.excepciones import ErrorSistemaPagos
-from aplicacion.consultas import consultar_clientes
-from presentacion.entrada import solicitar_alta_cliente
 from aplicacion.consultas import (
     consultar_bitacora,
     consultar_bitacora_del_turno,
@@ -13,15 +11,24 @@ from aplicacion.consultas import (
     consultar_historial,
     consultar_historial_del_turno,
     consultar_rechazos,
+    consultar_clientes
 )
 from aplicacion.procesar_pago import previsualizar_pago, procesar_pago
 from aplicacion.sesion import cambiar_turno, cerrar_jornada, describir_sesion
+from aplicacion.gestion_clientes import (
+    cambiar_estado_cliente,
+    hay_clientes_registrados,
+    obtener_estado_propuesto,
+    cargar_clientes_demo,
+)
 from presentacion.entrada import (
     confirmar,
     pausar,
     solicitar_datos,
     solicitar_opcion_menu,
     solicitar_operador_entrante,
+    solicitar_alta_cliente,
+    seleccionar_cliente_registrado,
 )
 from presentacion.salida import (
     mostrar_aviso,
@@ -33,6 +40,8 @@ from presentacion.salida import (
     mostrar_relevo,
     mostrar_reporte,
     mostrar_resultado_pago,
+    mostrar_cambio_estado,
+    mostrar_carga_demo,
 )
 
 CONTINUAR = True
@@ -46,6 +55,9 @@ PREGUNTA_CONFIRMAR_SALIDA = "¿Confirma cerrar el turno y salir del sistema?"
 MENSAJE_PAGO_CANCELADO = "Transacción cancelada. No se afectó el saldo del cliente."
 MENSAJE_RELEVO_CANCELADO = "Cambio de turno cancelado. Continúa el operador actual."
 MENSAJE_SALIDA_CANCELADA = "Salida cancelada. El turno permanece abierto."
+
+MENSAJE_CARTERA_VACIA = "No hay clientes registrados."
+MENSAJE_CAMBIO_CANCELADO = "Cambio cancelado. El cliente conserva su estado."
 
 
 # --------------------------------------------------------------------------- #
@@ -74,6 +86,12 @@ def _atender_opcion(opcion: str) -> bool:
 
             case constantes.OPCION_VER_HISTORIAL:
                 _consultar_historial()
+
+            case constantes.OPCION_CAMBIAR_ESTADO_CLIENTE:
+                _cambiar_estado_cliente()
+
+            case constantes.OPCION_CARGAR_DEMO:
+                _cargar_demo()
 
             case constantes.OPCION_VER_AUDITORIA:
                 _consultar_auditoria()
@@ -129,6 +147,32 @@ def _consultar_historial() -> None:
 
     mostrar_reporte(consultar_historial())
 
+# --------------------------------------------------------------------------- #
+# Opción: Cambiar estado clientes
+# --------------------------------------------------------------------------- #
+def _cambiar_estado_cliente() -> None:
+    """Activa o bloquea a un cliente de la cartera.
+    """
+    if not hay_clientes_registrados():
+        mostrar_aviso(MENSAJE_CARTERA_VACIA)
+        return
+
+    cliente = seleccionar_cliente_registrado()
+    propuesto = obtener_estado_propuesto(cliente)
+
+    if not confirmar(f"¿Cambiar el estado de este cliente a {propuesto}?"):
+        mostrar_aviso(MENSAJE_CAMBIO_CANCELADO)
+        return
+
+    anterior, actual = cambiar_estado_cliente(cliente["nombre"], propuesto)
+    mostrar_cambio_estado(anterior, actual)
+
+# --------------------------------------------------------------------------- #
+# Opción: Cargar clientes demostración
+# --------------------------------------------------------------------------- #
+def _cargar_demo() -> None:
+    """Siembra la cartera con clientes de demostración y sus planillas."""
+    mostrar_carga_demo(cargar_clientes_demo())
 
 # --------------------------------------------------------------------------- #
 # Opción: consultar auditoría

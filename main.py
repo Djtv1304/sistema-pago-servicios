@@ -22,6 +22,7 @@ from presentacion.salida import (
 
 MENSAJE_INTERRUPCION = "Ejecución interrumpida por el operador."
 MENSAJE_CIERRE_FORZADO = "Se cerró automáticamente el turno que estaba abierto."
+MENSAJE_ERROR_INESPERADO = "Ocurrió un error inesperado. Contacte al área de sistemas."
 
 
 # --------------------------------------------------------------------------- #
@@ -72,6 +73,9 @@ def main() -> None:
     except KeyboardInterrupt:
         print()
         mostrar_aviso(MENSAJE_INTERRUPCION)
+        cerrar_turno_pendiente()
+    except Exception as error:
+        mostrar_error(f"{MENSAJE_ERROR_INESPERADO} [{type(error).__name__}]")
         cerrar_turno_pendiente()
     finally:
         mostrar_despedida()

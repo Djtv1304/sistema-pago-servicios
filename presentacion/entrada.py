@@ -17,9 +17,22 @@ from core.excepciones import (
     DatoInvalidoError,
     MontoInvalidoError,
     ServicioNoDisponibleError,
+    ServicioYaPagadoError,
+    SinServiciosPendientesError,
 )
 from core.validaciones import normalizar_codigo
-from dominio.clientes import validar_estado, validar_nombre, validar_saldo
+from dominio.clientes import (
+    validar_estado,
+    validar_nombre,
+    validar_saldo,
+    obtener_pendientes,
+    validar_servicio_pendiente,
+    validar_tiene_pendientes,
+    tiene_pendientes,
+    obtener_valor_servicio,
+    obtener_valores,
+    tiene_valores_asignados,
+)
 from dominio.operadores import validar_nombre_operador
 from dominio.pagos import validar_monto
 from dominio.servicios import listar_servicios, validar_servicio
@@ -28,6 +41,9 @@ from presentacion.salida import (
     mostrar_error,
     mostrar_opcion_invalida,
     mostrar_servicios_disponibles,
+    mostrar_cuenta_al_dia,
+    mostrar_servicios_pendientes,
+    mostrar_valor_preasignado,
 )
 from aplicacion.gestion_clientes import (
     hay_clientes_registrados,
@@ -49,6 +65,7 @@ ERRORES_REINTENTABLES = (
     DatoInvalidoError,
     ServicioNoDisponibleError,
     MontoInvalidoError,
+    ServicioYaPagadoError,
 )
 
 MENSAJE_NOMBRE_OPERADOR = "Nombre del operador que inicia turno: "
@@ -119,13 +136,17 @@ def solicitar_saldo() -> Decimal:
     return solicitar(MENSAJE_SALDO, validar_saldo, AYUDA_SALDO)
 
 
-def solicitar_servicio() -> str:
-    """Muestra el catálogo y pide el servicio a pagar.
-    """
-    mostrar_servicios_disponibles()
-    ayuda = f"Servicios válidos: {', '.join(listar_servicios())}"
-    return solicitar(MENSAJE_SERVICIO, validar_servicio, ayuda)
+def solicitar_servicio(cliente: dict) -> str:
+    """Muestra los servicios pendientes con su importe y pide cuál se paga."""
+    pendientes = obtener_pendientes(cliente)
+    mostrar_servicios_pendientes(cliente)
 
+    ayuda = f"Servicios pendientes: {', '.join(pendientes)}"
+    return solicitar(
+        MENSAJE_SERVICIO,
+        lambda texto: validar_servicio_pendiente(cliente, validar_servicio(texto)),
+        ayuda,
+    )
 
 def solicitar_valor(servicio: str) -> Decimal:
     """Pide el valor del servicio, validado contra el tope de ese servicio.
@@ -199,18 +220,34 @@ def solicitar_alta_cliente() -> dict:
 def obtener_cliente_para_pago() -> dict:
     """Resuelve con qué cliente se procesará el pago.
 
-    Con la cartera vacía el alta es obligatoria: no existe forma de pagar sin
-    un titular registrado. Con clientes disponibles, se pregunta primero, para
-    que el caso frecuente (cliente recurrente) sea el camino corto.
+    Raises:
+        SinServiciosPendientesError: si el cliente ya pagó todo.
     """
     if not hay_clientes_registrados():
         mostrar_aviso(MENSAJE_CARTERA_VACIA)
-        return solicitar_alta_cliente()
+        return validar_tiene_pendientes(solicitar_alta_cliente())
 
-    if confirmar(PREGUNTA_CLIENTE_NUEVO):
-        return solicitar_alta_cliente()
+    cliente = (
+        solicitar_alta_cliente()
+        if confirmar(PREGUNTA_CLIENTE_NUEVO)
+        else seleccionar_cliente_registrado()
+    )
 
-    return seleccionar_cliente_registrado()
+    if not tiene_pendientes(cliente):
+        mostrar_cuenta_al_dia(cliente)
+
+    return validar_tiene_pendientes(cliente)
+
+def obtener_valor_a_pagar(cliente: dict, servicio: str) -> Decimal:
+    """Resuelve el importe del servicio: de la planilla o digitado.
+    """
+    valor = obtener_valor_servicio(cliente, servicio)
+
+    if valor is None:
+        return solicitar_valor(servicio)
+
+    mostrar_valor_preasignado(servicio, valor)
+    return valor
 
 
 # --------------------------------------------------------------------------- #
@@ -220,19 +257,12 @@ def solicitar_datos() -> dict:
     """Captura todos los datos necesarios para procesar un pago.
     [FUNCIÓN REQUERIDA]
 
-    El cliente ya NO se digita en cada pago: se selecciona de la cartera o se
-    da de alta una sola vez. Su estado y su saldo se leen del registro, de
-    modo que reflejan los débitos anteriores.
-
-    El servicio se pide antes que el valor porque el tope máximo del monto
-    depende del servicio elegido.
-
-    Devuelve: nombre | estado | saldo | servicio | valor
+    Devuelve: nombre | estado | saldo | servicio | valor | pendientes | valores
     """
     cliente = obtener_cliente_para_pago()
 
-    servicio = solicitar_servicio()
-    valor = solicitar_valor(servicio)
+    servicio = solicitar_servicio(cliente)
+    valor = obtener_valor_a_pagar(cliente, servicio)
 
     return {
         "nombre": cliente["nombre"],
@@ -240,6 +270,8 @@ def solicitar_datos() -> dict:
         "saldo": cliente["saldo"],
         "servicio": servicio,
         "valor": valor,
+        "pendientes": obtener_pendientes(cliente),
+        "valores": obtener_valores(cliente),
     }
 
 

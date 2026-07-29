@@ -28,6 +28,7 @@ from config.constantes import (
     RESULTADO_RECHAZADO,
     EVENTO_CLIENTE_REGISTRADO,
     EVENTO_CONSULTA_CLIENTES,
+    EVENTO_ESTADO_CLIENTE_CAMBIADO,
 )
 from core.dinero import formatear
 from core.excepciones import DatoInvalidoError, ErrorSistemaPagos
@@ -180,6 +181,18 @@ def auditar_consulta_historial(operador: dict, cantidad: int, total) -> dict:
         EVENTO_CONSULTA_HISTORIAL,
         operador,
         f"Historial consultado: {cantidad} pago(s), total {formatear(total)}.",
+    )
+
+def auditar_cambio_estado_cliente(operador: dict, anterior: dict, actual: dict) -> dict:
+    """Deja constancia del cambio de estado de un cliente.
+
+    Se registran ambos estados: saber que alguien fue bloqueado sirve poco si
+    no consta desde qué situación y quién lo autorizó.
+    """
+    return registrar_auditoria(
+        EVENTO_ESTADO_CLIENTE_CAMBIADO,
+        operador,
+        f"Cliente '{actual['nombre']}': {anterior['estado']} -> {actual['estado']}.",
     )
 
 # --------------------------------------------------------------------------- #

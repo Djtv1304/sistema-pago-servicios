@@ -7,6 +7,14 @@ controlado, sin exponer trazas técnicas al operador de ventanilla.
 
 """
 
+from decimal import Decimal
+
+def _texto_monto(monto: Decimal) -> str:
+    """Formatea un importe para el mensaje de error.
+    """
+    from core.dinero import formatear
+
+    return formatear(monto)
 
 class ErrorSistemaPagos(Exception):
     """Excepción base. Nunca se lanza directamente."""
@@ -54,15 +62,20 @@ class ClienteBloqueadoError(ErrorSistemaPagos):
 
 
 class SaldoInsuficienteError(ErrorSistemaPagos):
-    """El saldo disponible no cubre el total a debitar (valor + comisión)."""
+    """El saldo disponible no cubre el total a debitar (valor + comisión).
+
+    Recibe montos `Decimal`, nunca texto
+    """
 
     codigo = "ERR_SALDO_INSUFICIENTE"
 
-    def __init__(self, saldo_disponible, total_requerido) -> None:
+    def __init__(self, saldo_disponible: Decimal, total_requerido: Decimal) -> None:
         faltante = total_requerido - saldo_disponible
         super().__init__(
-            f"Saldo insuficiente. Disponible: {saldo_disponible} | "
-            f"Requerido: {total_requerido} | Faltante: {faltante}."
+            f"Saldo insuficiente. "
+            f"Disponible: {_texto_monto(saldo_disponible)} | "
+            f"Requerido: {_texto_monto(total_requerido)} | "
+            f"Faltante: {_texto_monto(faltante)}."
         )
         self.saldo_disponible = saldo_disponible
         self.total_requerido = total_requerido
@@ -89,6 +102,33 @@ class MontoInvalidoError(ErrorSistemaPagos):
 
     def __init__(self, mensaje: str) -> None:
         super().__init__(mensaje)
+
+
+class ServicioYaPagadoError(ErrorSistemaPagos):
+    """El cliente ya canceló ese servicio en la jornada."""
+
+    codigo = "ERR_SERVICIO_YA_PAGADO"
+
+    def __init__(self, nombre_cliente: str, servicio: str) -> None:
+        super().__init__(
+            f"'{nombre_cliente}' ya pagó el servicio de {servicio}. "
+            f"No se admite un segundo cobro."
+        )
+        self.nombre_cliente = nombre_cliente
+        self.servicio = servicio
+
+
+class SinServiciosPendientesError(ErrorSistemaPagos):
+    """El cliente no tiene servicios por pagar."""
+
+    codigo = "ERR_SIN_PENDIENTES"
+
+    def __init__(self, nombre_cliente: str) -> None:
+        super().__init__(
+            f"'{nombre_cliente}' no registra servicios pendientes. "
+            f"Su cuenta está al día."
+        )
+        self.nombre_cliente = nombre_cliente
 
 
 # --------------------------------------------------------------------------- #

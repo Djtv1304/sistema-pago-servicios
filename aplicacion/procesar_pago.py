@@ -23,6 +23,8 @@ from dominio.clientes import (
     obtener_saldo,
     validar_cliente,
     validar_saldo_suficiente,
+    marcar_servicio_pagado,
+    validar_servicio_pendiente
 )
 from dominio.comprobantes import generar_comprobante, renderizar_comprobante
 from dominio.pagos import calcular_detalle, construir_pago, describir_detalle
@@ -54,14 +56,9 @@ def previsualizar_pago(servicio: str, valor) -> dict:
 # --------------------------------------------------------------------------- #
 # Pasos del flujo (cada uno con una sola responsabilidad)
 # --------------------------------------------------------------------------- #
-def _preparar_cliente(nombre: str, estado: str, saldo) -> dict:
-    """Construye el cliente y verifica que esté habilitado para operar.
-
-    Raises:
-        DatoInvalidoError: si algún campo no cumple su formato.
-        ClienteBloqueadoError: si el cliente no está ACTIVO.
-    """
-    cliente = crear_cliente(nombre, estado, saldo)
+def _preparar_cliente(nombre, estado, saldo, pendientes=None, valores=None) -> dict:
+    """Reconstruye el cliente y verifica que esté habilitado para operar."""
+    cliente = crear_cliente(nombre, estado, saldo, pendientes, valores)
     return validar_cliente(cliente)
 
 
@@ -121,7 +118,10 @@ def _armar_resultado(
 # --------------------------------------------------------------------------- #
 # Caso de uso principal (FUNCIÓN REQUERIDA)
 # --------------------------------------------------------------------------- #
-def procesar_pago(nombre: str, estado: str, saldo, servicio: str, valor) -> dict:
+def procesar_pago(
+        nombre: str, estado: str, saldo, servicio: str, valor,
+        pendientes=None, valores=None,
+) -> dict:
     """Procesa el pago de un servicio de principio a fin. [FUNCIÓN REQUERIDA]
 
     Args:
@@ -146,12 +146,16 @@ def procesar_pago(nombre: str, estado: str, saldo, servicio: str, valor) -> dict
     operador = exigir_turno_activo()
 
     try:
-        cliente = _preparar_cliente(nombre, estado, saldo)
+        cliente = _preparar_cliente(nombre, estado, saldo, pendientes, valores)
         detalle = calcular_detalle(servicio, valor)
-        cliente_actualizado = _autorizar_debito(cliente, detalle)
 
-        # El saldo se persiste ANTES de asentar el pago: si el cliente no
-        # estuviera registrado, el fallo ocurre sin haber emitido comprobante.
+        # Se verifican los servicios pendientes
+        validar_servicio_pendiente(cliente, detalle["servicio"])
+
+        cliente_actualizado = _autorizar_debito(cliente, detalle)
+        cliente_actualizado = marcar_servicio_pagado(
+            cliente_actualizado, detalle["servicio"]
+        )
         sincronizar_saldo(cliente_actualizado)
 
         pago, comprobante = _asentar_transaccion(
