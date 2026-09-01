@@ -171,3 +171,17 @@ class ClienteDuplicadoError(ErrorSistemaPagos):
             f"Selecciónelo del listado en lugar de crearlo nuevamente."
         )
         self.nombre = nombre
+
+
+# --------------------------------------------------------------------------- #
+# Errores de infraestructura
+# --------------------------------------------------------------------------- #
+class ConexionBaseDatosError(ErrorSistemaPagos):
+    """No fue posible abrir o cerrar una conexión a la base de datos."""
+
+    codigo = "ERR_CONEXION_BD"
+
+    def __init__(self, mensaje: str, detalle: str | None = None) -> None:
+        texto = mensaje if not detalle else f"{mensaje} Detalle: {detalle}"
+        super().__init__(texto)
+        self.detalle = detalle

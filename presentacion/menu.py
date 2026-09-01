@@ -13,6 +13,7 @@ from aplicacion.consultas import (
     consultar_rechazos,
     consultar_clientes
 )
+from aplicacion.conexion_azure_sql import probar_conexion
 from aplicacion.procesar_pago import previsualizar_pago, procesar_pago
 from aplicacion.sesion import cambiar_turno, cerrar_jornada, describir_sesion
 from aplicacion.gestion_clientes import (
@@ -42,6 +43,7 @@ from presentacion.salida import (
     mostrar_resultado_pago,
     mostrar_cambio_estado,
     mostrar_carga_demo,
+    mostrar_prueba_conexion_azure_sql,
 )
 
 CONTINUAR = True
@@ -98,6 +100,9 @@ def _atender_opcion(opcion: str) -> bool:
 
             case constantes.OPCION_CAMBIAR_TURNO:
                 _cambiar_turno()
+
+            case constantes.OPCION_PROBAR_AZURE_SQL:
+                _probar_conexion_azure_sql()
 
             case constantes.OPCION_REGISTRAR_CLIENTE:
                 _registrar_cliente()
@@ -204,6 +209,14 @@ def _cambiar_turno() -> None:
 
     saliente, entrante = cambiar_turno(solicitar_operador_entrante())
     mostrar_relevo(saliente, entrante)
+
+
+# --------------------------------------------------------------------------- #
+# Opción: probar conexión Azure SQL
+# --------------------------------------------------------------------------- #
+def _probar_conexion_azure_sql() -> None:
+    """Ejecuta una prueba automática de conexión Azure SQL vía variables de entorno."""
+    mostrar_prueba_conexion_azure_sql(probar_conexion())
 
 
 # --------------------------------------------------------------------------- #

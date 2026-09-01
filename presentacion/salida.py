@@ -39,6 +39,7 @@ TITULO_ALTA_CLIENTE = "REGISTRO DE NUEVO CLIENTE"
 TITULO_PENDIENTES = "SERVICIOS PENDIENTES DEL CLIENTE"
 TITULO_CAMBIO_ESTADO = "CAMBIO DE ESTADO DE CLIENTE"
 TITULO_CARGA_DEMO = "CARGA DE CLIENTES DE DEMOSTRACIÓN"
+TITULO_AZURE_SQL = "PRUEBA DE CONEXIÓN AZURE SQL"
 ETIQUETA_SIN_VALOR = "(a digitar)"
 
 
@@ -120,6 +121,17 @@ def mostrar_carga_demo(resultado: dict) -> None:
         f"Total: {resultado['total']}"
     )
     mostrar_borde()
+
+
+def mostrar_prueba_conexion_azure_sql(resultado: dict) -> None:
+    """Presenta el resultado exitoso de la prueba de conexión Azure SQL."""
+    mostrar_titulo(TITULO_AZURE_SQL)
+    mostrar_texto(f" Servidor      : {resultado['server']}")
+    mostrar_texto(f" Base de datos : {resultado['database']}")
+    mostrar_texto(f" Puerto        : {resultado['port']}")
+    mostrar_texto(f" Timeout       : {resultado['timeout']}s")
+    mostrar_borde()
+    mostrar_exito("Conexión Azure SQL exitosa.")
 
 # --------------------------------------------------------------------------- #
 # Mensajes con intención

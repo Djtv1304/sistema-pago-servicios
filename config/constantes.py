@@ -106,6 +106,7 @@ OPCION_VER_CLIENTES = "5"
 OPCION_VER_HISTORIAL = "6"
 OPCION_VER_AUDITORIA = "7"
 OPCION_CAMBIAR_TURNO = "8"
+OPCION_PROBAR_AZURE_SQL = "9"
 OPCION_SALIR = "0"
 
 ETIQUETAS_MENU = {
@@ -117,6 +118,7 @@ ETIQUETAS_MENU = {
     OPCION_VER_HISTORIAL: "Ver historial de pagos",
     OPCION_VER_AUDITORIA: "Ver bitácora de auditoría",
     OPCION_CAMBIAR_TURNO: "Cambiar turno de operador",
+    OPCION_PROBAR_AZURE_SQL: "Probar conexión Azure SQL",
     OPCION_SALIR: "Cerrar turno y salir",
 }
 
