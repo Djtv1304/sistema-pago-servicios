@@ -47,17 +47,20 @@ comments:
       RequiereTerminal: Indica si el canal requiere un terminal o dispositivo fisico para operar (true/false).
       Estado: Indica si el canal esta activo o inactivo (true/false).
       FechaCreacion: Fecha de creacion del canal, usado en reportes y logs.
+      ModoDigitalPresencial: Indica si el canal opera de forma Digital, Presencial o Ambos.
       RequiereJornadaCaja: Indica si el canal requiere una jornada de caja abierta para operar (true/false).
   - table: Catalogo.CodigosRespuesta
     tableComment: Catalogo de codigos de respuesta/resultado usados por transacciones y operaciones del core.
     columnComments:
       Descripcion: Descripcion del codigo de respuesta, usado en reportes y logs.
       Categoria: Categoria del codigo de respuesta, usado en reportes y logs.
-      GeneraBloqueo: Indica si el codigo de respuesta genera bloqueo de la cuenta, tarjeta u otro producto (true/false).
   - table: Catalogo.Monedas
     tableComment: Catalogo de monedas soportadas por el core (codigo ISO, simbolo, decimales).
     columnComments:
-      CodigoAlfabetico: Codigo alfabetico de la moneda como ISO 4217 (ej:' USD, EUR, JPY').
+      CodigoISO: Codigo alfabetico de la moneda como ISO 4217 (ej:' USD, EUR, JPY').
+      Simbolo: Simbolo de la moneda, usado en reportes y pantallas (ej:' $, €').
+      FechaVigencia: Fecha desde la cual la moneda esta vigente para operar.
+      FechaExpiracion: Fecha hasta la cual la moneda esta vigente para operar (null si no aplica).
       NombreMoneda: Nombre descriptivo de la moneda (ej:' Dolar estadounidense, Euro, Yen japones').
       Decimales: Cantidad de decimales soportados por la moneda (ej:' 2 para USD, 0 para JPY').
       Estado: Indica si la moneda esta activa o inactiva (I/A).
@@ -82,6 +85,7 @@ comments:
       Descripcion: Descripcion de la comision, usado en reportes y logs.
       VigenciaDesde: Fecha desde la cual la comision esta vigente.
       VigenciaHasta: Fecha hasta la cual la comision esta vigente.
+      FechaRegistro: Fecha en la que se registro la comision, usado en reportes y logs.
       Estado: Indica si la comision esta activa o inactiva (I/A).
   - table: Catalogo.Producto
     tableComment: Catalogo de productos financieros ofrecidos por la cooperativa (cuentas, tarjetas, creditos).
@@ -91,8 +95,8 @@ comments:
       TipoProducto: Tipo de producto (ej:' Credito, Tarjeta, Cuenta').
       MontoAperturaMinimo: Monto minimo requerido para apertura del producto.
       Estado: Indica si el producto esta activo o inactivo (I/A).
-      MontoMinimo: Monto minimo permitido para el producto (ej:' 1000 para cuentas de ahorro').
-      MontoMaximo: Monto maximo permitido para el producto (ej:' 100000 para cuentas corrientes').
+      IdTipoCredito: FK a Credito.TipoCredito, indica el tipo de credito asociado al producto (obligatorio si TipoProducto es Credito).
+      PermiteOperacionesPresenciales: Indica si el producto permite operaciones presenciales (true/false).
       Marca: Marca del producto (ej:' Visa, Mastercard, American Express').
   - table: Catalogo.ProductoCanalCupo
     tableComment: Relacion producto-canal con los cupos/limites operativos habilitados, parametrizados y definidos por el ente financiero; por canal y por producto.
@@ -103,9 +107,25 @@ comments:
       CupoMensualMaximo: Cupo maximo mensual permitido y parametrizado por el ente financiero para el producto en el canal.
       MontoMaxTransaccion: Monto maximo por transaccion permitido y parametrizado por el ente financiero para el producto en el canal.
       MaxTransaccionesDia: Cantidad maxima de transacciones por dia permitido y parametrizado por el ente financiero para el producto en el canal.
+      FechaVigencia: Fecha desde la cual el cupo/limite esta vigente.
       CodigoMoneda: Codigo de la moneda en la que se expresa el cupo/limite.
       Estado: Indica si el cupo/limite esta activo o inactivo (I/A).
       FechaRegistro: Fecha en la que se registro el cupo/limite, usado en reportes y logs.
+  - table: Catalogo.Ciudad
+    tableComment: Diccionario de ciudades ligado al pais.
+    columnComments:
+        CodigoPais: FK a Paises, indica el pais al que pertenece la ciudad.
+        Nombre: Nombre de la ciudad.
+        Provincia: Provincia a la que pertenece la ciudad.
+        Estado: Indica si la ciudad esta activa o inactiva (I/A).
+        FechaRegistro: Fecha en la que se registro la ciudad, usado en reportes y logs.
+  - table: Catalogo.ActividadEconomica
+    tableComment: Diccionario de actividad economica declarada por el socio.
+    columnComments:
+      Descripcion: Descripcion de la actividad economica.
+      AreaActividad: Area o rubro al que pertenece la actividad economica.
+      Estado: Indica si la actividad economica esta activa o inactiva (I/A).
+      FechaRegistro: Fecha en la que se registro la actividad economica, usado en reportes y logs.
 
   # ---------------- Organizacion ----------------
   - table: Organizacion.Agencia
@@ -129,6 +149,10 @@ comments:
     columnComments:
       CreadoPor: Usuario que registro al socio. Referencia logica (sin FK) a SeguridadDB.dbo.Usuarios.UsuarioID.
       Identificacion: Numero de identificacion unica del socio (Cedula).
+      TipoCliente: Tipo de socio (Natural o Juridico).
+      RazonSocial: Razon social del socio, obligatoria cuando TipoCliente es Juridico.
+      NombreComercial: Nombre comercial del socio (aplica principalmente a socios de tipo Juridico).
+      IdActividadEconomica: FK a ActividadEconomica, indica la actividad economica declarada del socio.
       TipoDocumento: Tipo de documento de identificacion del socio (C para Cedula, P para Pasaporte, R para RUC).
       Nombres: Nombres del socio.
       Apellidos: Apellidos del socio.
@@ -140,8 +164,6 @@ comments:
       TelefonoCelular: Numero de telefono celular del socio.
       Email: Correo electronico del socio.
       Ocupacion: Ocupacion del socio.
-      ActividadEconomica: Actividad economica del socio.
-      IngresoMensual: Ingreso mensual declarado del socio.
       CargasFamiliares: Cantidad de cargas familiares del socio.
       ConsentimientoDatos: Indica si el socio ha dado consentimiento para el tratamiento de sus datos personales (true/false).
       FechaConsentimiento: Fecha en la que el socio dio su consentimiento para el tratamiento de sus datos personales.
@@ -158,6 +180,19 @@ comments:
       ModificadoPor: Usuario que realizo la modificacion. Referencia logica a SeguridadDB.
       DireccionIP: Direccion IP desde la que se realizo la modificacion.
       FechaModificacion: Fecha en la que se realizo la modificacion, usado en reportes y logs.
+      Snap_Identificacion: Fotografia del numero de identificacion del socio al momento del evento.
+      Snap_TipoDocumento: Fotografia del tipo de documento del socio al momento del evento.
+      Snap_TipoCliente: Fotografia del tipo de socio (Natural/Juridico) al momento del evento.
+      Snap_Nombres: Fotografia de los nombres del socio al momento del evento. # nuevo
+      Snap_Apellidos: Fotografia de los apellidos del socio al momento del evento. # nuevo
+      Snap_RazonSocial: Fotografia de la razon social del socio al momento del evento. # nuevo
+      Snap_NombreComercial: Fotografia del nombre comercial del socio al momento del evento. # nuevo
+      Snap_FechaNacimiento: Fotografia de la fecha de nacimiento del socio al momento del evento. # nuevo
+      Snap_Genero: Fotografia del genero del socio al momento del evento. # nuevo
+      Snap_EstadoCivil: Fotografia del estado civil del socio al momento del evento. # nuevo
+      Snap_TelefonoCelular: Fotografia del telefono celular del socio al momento del evento. # nuevo
+      Snap_Email: Fotografia del correo electronico del socio al momento del evento. # nuevo
+      Snap_Estado: Fotografia del estado (activo/inactivo) del socio al momento del evento. # nuevo
   - table: Clientes.Direcciones
     tableComment: Direcciones asociadas a un cliente.
     columnComments:
@@ -215,9 +250,12 @@ comments:
     tableComment: Situacion financiera declarada/verificada del cliente (ingresos, egresos, patrimonio).
     columnComments:
       IdCliente: FK a Cliente, indica el socio al que pertenece la situacion financiera.
+      PatrimonioNeto: Patrimonio neto declarado del socio.
       RelacionLaboral: Relacion laboral del socio (Empresarial, Dependiente, Independiente).
       AntiguedadLaboralMeses: Antiguedad laboral del socio en meses.
       IngresoMensual: Ingreso mensual declarado del socio.
+      IngresosAnuales: Ingresos anuales declarados del socio.
+      IngresosDeclarados: Ingresos declarados del socio, usados en reportes y logs.
       GastoMensual: Gasto mensual declarado del socio.
       CuotaDeudaExterna: Cuota mensual de deuda con otras entidades financieras.
       EsVigente: Indica si la situacion financiera del socio esta vigente (true/false).
@@ -233,7 +271,7 @@ comments:
       IdAgencia: FK a Agencia, indica la agencia donde se registro la cuenta.
       IdProducto: FK a Producto, indica el producto financiero asociado a la cuenta.
       TipoCuenta: Tipo de cuenta (Ahorro, Corriente - Evaluar si el Producto no define el tipo tambien).
-      CodigoMoneda: Codigo de la moneda en la que se expresa el saldo de la cuenta.
+      IdMoneda: Codigo de la moneda en la que se expresa el saldo de la cuenta. Antes se llamaba CodigoMoneda.
       Saldo: Saldo actual de la cuenta.
       SaldoRetenido: Saldo retenido de la cuenta (ej:' para cheques en proceso de compensacion').
       Estado: Estado de la cuenta que incluye si esta (Activa, Inactiva, Bloqueada, Cerrada).
@@ -241,7 +279,7 @@ comments:
       FechaUltimoMovimiento: Fecha del ultimo movimiento registrado en la cuenta.
       FechaCierre: Fecha en la que se cerro la cuenta (NULL si sigue activa).
       CreadoPor: Usuario que abrio la cuenta. Referencia logica (sin FK) a SeguridadDB.
-  - table: Core.CanalCupo
+  - table: Core.CanalCupoClienteCustom
     tableComment: Cupos/limites operativos definidos por el titular/propietario de una cuenta por canal. Nunca superan los cupos definidos por el ente financiero en ProductoCanalCupo.
     columnComments:
       IdCuenta: FK a Cuenta, indica la cuenta a la que pertenece el cupo parametrizado por el titular.
@@ -251,9 +289,22 @@ comments:
       MontoMaxTransaccion: Monto maximo por transaccion permitido y parametrizado por el titular de la cuenta para el canal decidido.
       MaxTransaccionesDia: Cantidad maxima de transacciones por dia permitido y parametrizado por el titular de la cuenta para el canal decidido.
       CodigoMoneda: Codigo de la moneda en la que se expresa el cupo/limite.
+      FechaVigencia: Fecha desde la cual el cupo/limite esta vigente.
       Estado: Indica si el cupo/limite esta activo o inactivo (I/A).
       FechaRegistro: Fecha en la que se registro el cupo/limite, usado en reportes y logs.
       ModificadoPor: Usuario que modifico el cupo/limite. Referencia logica (sin FK) a SeguridadDB.
+  - table: Core.CuposModHis
+    tableComment: Historico de cupos modificados por el usuario, con el valor del cupo por canal antes y despues del cambio.
+    columnComments:
+        IdCanalCupoCliente: FK a CanalCupoClienteCustom, indica el cupo de cliente que fue modificado.
+        CupoDiarioAnterior: Valor del cupo diario antes del cambio.
+        CupoDiarioNuevo: Valor del cupo diario despues del cambio.
+        CupoMensualAnterior: Valor del cupo mensual antes del cambio.
+        CupoMensualNuevo: Valor del cupo mensual despues del cambio.
+        MontoMaxTxAnterior: Monto maximo por transaccion antes del cambio.
+        MontoMaxTxNuevo: Monto maximo por transaccion despues del cambio.
+        ModificadoPor: Usuario que realizo la modificacion del cupo. Referencia logica (sin FK) a SeguridadDB.
+        FechaModificacion: Fecha en la que se realizo la modificacion del cupo, usado en reportes y logs.
   - table: Core.Tarjeta
     tableComment: Tarjeta emitida asociada a una cuenta.
     columnComments:
@@ -272,6 +323,8 @@ comments:
       IdTarjetaTitular: FK a Tarjeta, indica la tarjeta titular si esta es una extension (null si no es extension).
       FechaEmision: Fecha en la que se emitio la tarjeta.
       FechaExpiracion: Fecha en la que expira la tarjeta.
+      FechaSolicitud: Fecha en la que se solicito la tarjeta.
+      FechaResolucion: Fecha y hora en la que se resolvio (aprobo/rechazo) la solicitud de la tarjeta.
       Estado: Estado de la tarjeta que incluye si esta (Activa, Bloqueada, Vencida, Anulada).
       PinAsignado: Indica si se ha asignado un PIN a la tarjeta (true/false).
       FechaUltimoMovimiento: Fecha del ultimo movimiento registrado con la tarjeta.
@@ -310,20 +363,21 @@ comments:
     tableComment: Terminal fisico o logico (POS, cajero, etc.) desde el que se origina una operacion.
     columnComments:
       CodigoTerminal: Codigo unico del terminal, usado en transacciones y operaciones del core.
-      CodigoAdquirente: Codigo del adquiriente del terminal, usado en transacciones y operaciones del core (Verificar su utilidad).
+      CodigoAdquirente: Número de identificación que la cooperativa le asigna a un comercio para registrarlo, usado en transacciones y operaciones del core.
       TipoTerminal: Tipo de terminal (ATM, POS, Kiosco - Evaluar si deberia ser un catalogo o si ATM deberia ser un canal).
       IdCanal: FK a Canal, indica el canal al que pertenece el terminal.
       IdAgencia: FK a Agencia, indica la agencia donde se ubica el terminal.
       Ubicacion: Ubicacion fisica del terminal (ej:' Piso 1, frente a la entrada principal').
-      CodigoPais: Codigo del pais donde se ubica el terminal, FK a Paises.
       Estado: Estado del terminal que incluye si esta (M para Mantenimiento, A para Activo, I para Inactivo).
       FechaInstalacion: Fecha en la que se instalo el terminal.
+      FechaRegistro: Fecha en la que se registro el terminal, usado en reportes y logs.
+      FechaUltimoMantenimiento: Fecha del ultimo mantenimiento realizado al terminal.
+      NumeroSerieTerminal: Numero de serie fisico del terminal, usado en gestion de activos.
   - table: Core.Transaccion
     tableComment: Movimiento transaccional del core, todos los canales (incluida ventanilla via IdJornadaCaja).
     columnComments:
       NumeroComprobante: Numero unico de comprobante de la transaccion, usado en reportes y logs.
-      Secuencial: Secuencial unico de la transaccion, usado en reportes y logs.
-      RegistroUnico: Registro unico de la transaccion, usado en reportes y logs (Verificar si es necesario).
+      RetrievalReferenceNumber: Registro unico de la transaccion que viene ya construido desde el dispositivo que originó la transacción, usado en reportes y logs.
       NumeroAutorizacion: Numero de autorizacion de la transaccion, usado en reportes y logs.
       MTI: Codigo de mensaje de la transaccion, por defecto ISO 8583 (ej:' 0200, 0210, 0400, 0410').
       CodigoProcesamiento: Codigo de procesamiento de la transaccion, por defecto ISO 8583 (ej:' 00, 01, 02, 03').
@@ -335,6 +389,7 @@ comments:
       IdCanal: FK a Canal, indica el canal por el que se origino la transaccion.
       IdTerminal: FK a Terminal, indica el terminal desde el que se origino la transaccion (null si no aplica).
       IdAgencia: FK a Agencia, indica la agencia donde se origino la transaccion (null si no aplica).
+      IdCiudad: FK a Ciudad, indica la ciudad donde se origino la transaccion. # nuevo
       IdTransaccionRelacionada: FK a Transaccion, indica la transaccion relacionada (null si no aplica).
       Monto: Monto de la transaccion.
       CodigoMoneda: Codigo de la moneda en la que se expresa el monto de la transaccion.
@@ -343,7 +398,9 @@ comments:
       FechaHoraSistema: Fecha y hora del sistema en la que se registro la transaccion.
       FechaHoraDispositivo: Fecha y hora del dispositivo o terminal en la que se registro la transaccion (null si no aplica).
       FechaContable: Fecha contable de la transaccion, usada para efectos de cierre y conciliacion.
-      CodigoRespuesta: Codigo de respuesta de la transaccion enviado por un terminal o canal, FK a CodigosRespuesta.
+      FechaRegistro: Fecha en la que se registro la transaccion en el sistema, usado en reportes y logs. # Nuevo
+      STAN: System Trace Audit Number, numero secuencial de rastreo de la transaccion segun estandar ISO 8583. # nuevo
+      CodigoRespuesta: Codigo de respuesta de la transaccion enviado desde el emisor al adquirente desde cualquier origen, FK a CodigosRespuesta.
       MacValidado: Indica si el MAC de la transaccion fue validado correctamente (true/false).
       DireccionIP: Direccion IP desde la que se origino la transaccion (null si no aplica).
       Estado: Estado de la transaccion que incluye si esta (Completada, Pendiente, Reversada, Rechazada).
@@ -358,6 +415,7 @@ comments:
       Monto: Monto del movimiento realizado sobre la cuenta.
       SaldoAnterior: Saldo de la cuenta antes del movimiento.
       SaldoPosterior: Saldo de la cuenta despues del movimiento.
+      RolCuenta: Rol de la cuenta en el movimiento (Origen o Destino). # nuevo
       CodigoMoneda: Codigo de la moneda en la que se expresa el monto del movimiento.
       FechaContable: Fecha contable del movimiento, usada para efectos de cierre y conciliacion.
       FechaHoraSistema: Fecha y hora del sistema en la que se registro el movimiento.
@@ -369,9 +427,21 @@ comments:
       MontoAplicado: Monto de la comision aplicada sobre la transaccion.
       CodigoMoneda: Codigo de la moneda en la que se expresa el monto de la comision aplicada.
       Exonerada: Indica si la comision fue exonerada (true/false).
+      FechaRegistro: Fecha en la que se registro la comision aplicada, usado en reportes y logs. # nuevo
       MotivoExoneracion: Motivo por el cual la comision fue exonerada (null si no aplica).
   - table: Core.TransferenciaExterna
     tableComment: Transferencia hacia/desde una entidad externa a la cooperativa.
+  - table: Core.Envios
+    tableComment: Entrega fisica al socio (por ejemplo, de una tarjeta). # nuevo
+    columnComments:
+      IdTarjeta: FK a Tarjeta, indica la tarjeta asociada al envio (null si no aplica). # nuevo
+      IdCliente: FK a Cliente, indica el socio destinatario del envio. # nuevo
+      RequiereEnvio: Indica si el envio requiere entrega fisica (true/false). # nuevo
+      DireccionEnvio: Direccion fisica de entrega del envio, obligatoria si RequiereEnvio es true. # nuevo
+      IdCiudad: FK a Ciudad, indica la ciudad de entrega del envio. # nuevo
+      FechaEntrega: Fecha en la que se entrego el envio (null si aun no se entrega). # nuevo
+      Estado: Estado del envio que incluye si esta (PENDIENTE, ENVIADO, ENTREGADO, DEVUELTO). # nuevo
+      FechaRegistro: Fecha en la que se registro el envio, usado en reportes y logs. # nuevo
 
   # ---------------- Boveda ----------------
   - table: Boveda.Boveda
@@ -496,6 +566,37 @@ comments:
       Concepto: Concepto del movimiento contable, usado en reportes y logs.
       Monto: Monto del movimiento contable.
       FechaHora: Fecha y hora en la que se registro el movimiento contable.
+  - table: Contabilidad.Feriado
+    tableComment: Catalogo maestro de feriados. Un feriado es un rango de fechas, nacional o local (ligado a una ciudad). # nuevo
+    columnComments:
+      Nombre: Nombre del feriado. # nuevo
+      FechaDesde: Fecha de inicio del rango del feriado. # nuevo
+      FechaHasta: Fecha de fin del rango del feriado. # nuevo
+      FechaOriginal: Fecha original del feriado antes de un traslado (null si no aplica). # nuevo
+      EsTrasladado: Indica si el feriado fue trasladado de su fecha original (true/false). # nuevo
+      MotivoTraslado: Motivo por el cual se traslado el feriado (null si no aplica). # nuevo
+      FestivaNacional: Indica si el feriado aplica a nivel nacional (true/false). # nuevo
+      FestivaLocal: Indica si el feriado aplica a nivel local (true/false). # nuevo
+      IdCiudad: FK a Ciudad, indica la ciudad a la que aplica el feriado local (null si es nacional). # nuevo
+      Estado: Estado del feriado (por defecto ACTIVO). # nuevo
+      FechaRegistro: Fecha en la que se registro el feriado, usado en reportes y logs. # nuevo
+      CreadoPor: Usuario que registro el feriado. Referencia logica (sin FK) a SeguridadDB. # nuevo
+  - table: Contabilidad.FechaContable
+    tableComment: Calendario contable materializado, una fila por dia para todas las instituciones. Generado por el proceso sp_GenerarFechaContable, nunca se llena a mano. # nuevo
+    columnComments:
+      Fecha: Fecha calendario a la que corresponde el registro. # nuevo
+      Anio: Anio de la fecha, calculado y persistido. # nuevo
+      Mes: Mes de la fecha, calculado y persistido. # nuevo
+      Dia: Dia de la fecha, calculado y persistido. # nuevo
+      NumeroDiaSemana: Numero de dia de la semana (1=Lunes ... 7=Domingo). # nuevo
+      NombreDiaSemana: Nombre del dia de la semana. # nuevo
+      EsFinDeSemana: Indica si la fecha es fin de semana (true/false). # nuevo
+      EsFeriado: Indica si la fecha es feriado (true/false). # nuevo
+      IdFeriado: FK a Feriado, indica el feriado asociado a la fecha (null si no aplica). # nuevo
+      HoraInicio: Hora de inicio de operacion para la fecha (por defecto 07:00:00). # nuevo
+      HoraFin: Hora de fin de operacion para la fecha (por defecto 19:00:00). # nuevo
+      EsDiaContable: Indica si la fecha es un dia contable operativo, calculado como no fin de semana y no feriado (true/false). # nuevo
+      FechaRegistro: Fecha en la que se registro la fila del calendario, usado en reportes y logs. # nuevo
 
   # ---------------- Credito ----------------
   - table: Credito.TipoCredito
@@ -514,6 +615,8 @@ comments:
       RecargoMoraSobreTasa: Recargo de mora sobre la tasa nominal anual de interes aplicable al tipo de credito.
       VigenciaDesde: Fecha desde la cual la tasa de interes es vigente.
       VigenciaHasta: Fecha hasta la cual la tasa de interes es vigente.
+      MontoMinimo: Monto minimo prestable bajo esta tasa de interes (rango de monto, antes vivia en Producto). # nuevo
+      MontoMaximo: Monto maximo prestable bajo esta tasa de interes (rango de monto, antes vivia en Producto). # nuevo
   - table: Credito.Seguro
     tableComment: Catalogo de seguros asociables a un credito.
     columnComments:
@@ -722,7 +825,7 @@ comments:
 viewpoints:
   - name: Catalogo
     desc: Catalogos y dominios transversales compartidos por todos los modulos.
-    tables: [Catalogo.Canal, Catalogo.CodigosRespuesta, Catalogo.Monedas, Catalogo.Paises, Catalogo.Comisiones, Catalogo.Producto, Catalogo.ProductoCanalCupo]
+    tables: [Catalogo.Canal, Catalogo.CodigosRespuesta, Catalogo.Monedas, Catalogo.Paises, Catalogo.Ciudad, Catalago.ActividadEconomica, Catalogo.Comisiones, Catalogo.Producto, Catalogo.ProductoCanalCupo]
 
   - name: Organizacion
     desc: Estructura administrativa/fisica de la cooperativa.
@@ -734,7 +837,7 @@ viewpoints:
 
   - name: Core
     desc: Cuentas, tarjetas, canales y el motor transaccional.
-    tables: [Core.Cuenta, Core.CanalCupo, Core.Tarjeta, Core.TarjetaPin, Core.TarjetaHis, Core.Terminal, Core.Transaccion, Core.Movimiento, Core.TransaccionComision, Core.TransferenciaExterna]
+    tables: [Core.Cuenta, Core.CanalCupoClienteCustom, Core.CuposModHis, Core.Envios, Core.Tarjeta, Core.TarjetaPin, Core.TarjetaHis, Core.Terminal, Core.Transaccion, Core.Movimiento, Core.TransaccionComision, Core.TransferenciaExterna]
 
   - name: Boveda
     desc: Efectivo a nivel boveda/agencia (no ventanilla).
@@ -746,7 +849,7 @@ viewpoints:
 
   - name: Contabilidad
     desc: Plan de cuentas y asientos contables.
-    tables: [Contabilidad.CuentasContables, Contabilidad.MovimientosContables]
+    tables: [Contabilidad.CuentasContables, Contabilidad.MovimientosContables, Contabilidad.Feriado, Contabilidad.FechaContable]
 
   - name: Credito
     desc: Aprobacion de credito, plan de pagos, garantias y politica de riesgo.
